@@ -1,21 +1,21 @@
 const puppeteer = require('puppeteer');
 
 (async () => {
-  const browser = await puppeteer.launch({headless: false, args: [
-    '--start-maximized',
-],
-defaultViewport: null,});
+  const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.goto('https://github.com/truongduchuy');
-  // await page.setViewport({ width: 350, height: 800 })
-  await page.waitFor(2000)
+  await page.goto("https://www.nhaccuatui.com/bai-hat/top-20.html");
 
-  //click responsitories
-  await page.click('.UnderlineNav-body a:nth-child(2)')
-
-  await page.waitFor(2000)
-
-  await page.screenshot({path: 'github.png', fullPage: true});
-
+  const songs = await page.evaluate(() => {
+    let items = document.querySelectorAll(".name_song");
+    let links = [];
+    items.forEach(item => {
+      links.push({
+        title: item.innerText,
+        url: item.getAttribute("href")
+      });
+    });
+    return links;
+  });
+  console.log(songs);
   await browser.close();
 })();
