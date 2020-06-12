@@ -16,6 +16,19 @@ const puppeteer = require('puppeteer');
     });
     return links;
   });
-  console.log(songs);
+  
+  for (let song of songs) {
+    await page.goto(song.url);
+    let lyric = await page.evaluate(() => {
+      let lyric = document
+        .getElementsByClassName("pd_lyric trans")[0]
+        .innerHTML.replace(/\<br\>/g, "");
+      return lyric;
+    });
+    console.log(song.title);
+    console.log("..............................");
+    console.log(lyric);
+  }
+
   await browser.close();
 })();
