@@ -5,18 +5,20 @@ const app = express()
 
 const port = process.env.PORT || 3000
 
+app.get('/', (req, res) => {
+  res.send({test: 'hello'})
+})
 
-app.get('/fanpage', (req, res) => {
+app.get('/test', (req, res) => {
     const { url } = req.query;
-    let fanpageData = {};
 
-  (async () => {
+    (async () => {
     // const browser = await puppeteer.launch({headless: false});
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
     await page.waitFor(2000)
-    fanpageData = await page.evaluate(() => {
+    let fanpageData = await page.evaluate(() => {
       const backgroundImageElement = document.querySelector("._4on7");
       // ._u9q : about section
       let addressElement = document.querySelector('._u9q > div:nth-child(3) ._4bl9 > div')
@@ -42,7 +44,7 @@ app.get('/fanpage', (req, res) => {
       return {imageUrl, address, phoneNumber, openTime, numOfLikes, numOfFollowers, numOfLikes};
     });
     
-    res.send({ fanpageData });
+    res.json({ fanpageData });
     await browser.close();
   })();
   });
