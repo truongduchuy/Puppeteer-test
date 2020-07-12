@@ -6,18 +6,20 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.get("/test", (req, res) => {
-  res.send("hello");
+  res.send(`${req.query.name}`);
 });
 
-app.get("/fanpage", (req, res) => {
+app.get("/", async (req, res) => {
   const { url } = req.query;
   let fanpageData = {};
 
-  (async () => {
-    // const browser = await puppeteer.launch({headless: false});
-    const browser = await puppeteer.launch();
+  try {
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+    console.log("browser is on");
     const page = await browser.newPage();
-    await page.goto(url);
+    await page.goto(url || "https://www.facebook.com/HelloCoffee125/");
     await page.waitFor(2000);
     fanpageData = await page.evaluate(() => {
       const backgroundImageElement = document.querySelector("._4on7");
@@ -28,9 +30,14 @@ app.get("/fanpage", (req, res) => {
       let phoneNumberElement = document.querySelector(
         "._u9q > div:nth-child(4) ._4bl9 > div"
       );
-      let openTimeElement = document.querySelector(
-        "._u9q > div:nth-child(6) ._4bl9 > div"
+      
+      const prefixOpenTime = ["Giờ", "Hours"];
+      let openTimeElement = [
+        ...document.querySelectorAll("._u9q > div"),
+      ].find(element =>
+        prefixOpenTime.some(prefix => element.innerText.includes(prefix))
       );
+
       let numOfLikesElement = document.querySelector(
         "._6590 > div:nth-child(2) ._4bl9 > div"
       );
@@ -48,15 +55,22 @@ app.get("/fanpage", (req, res) => {
       const openTime = openTimeElement && openTimeElement.innerText;
       // const rateReview = rateReviewElement && rateReviewElement.innerText
 
-      // 8.615 người thích trang này => 8615
-      const numOfLikes =
+      // 8.615 [người|people] thích trang này => 8615
+      let numOfLikes =
         numOfLikesElement &&
-        numOfLikesElement.innerText.replace(".", "").match(/\d*(?= người)/g)[0];
-      const numOfFollowers =
+        numOfLikesElement.innerText
+          .replace(/[\.|\,]/, "")
+          .match(/\d*(?= [người|people])/g);
+
+      numOfLikes = numOfLikes && numOfLikes[0];
+
+      let numOfFollowers =
         numOfFollowersElement &&
         numOfFollowersElement.innerText
-          .replace(".", "")
-          .match(/\d*(?= người)/g)[0];
+          .replace(/[\.|\,]/, "")
+          .match(/\d*(?= [người|followers])/g);
+
+      numOfFollowers = numOfFollowers && numOfFollowers[0];
 
       return {
         imageUrl,
@@ -65,17 +79,17 @@ app.get("/fanpage", (req, res) => {
         openTime,
         numOfLikes,
         numOfFollowers,
-        numOfLikes,
       };
     });
 
-    res.send({ fanpageData });
     await browser.close();
-  })();
+
+    res.send({ fanpageData });
+  } catch (error) {
+    console.log(error.message);
+  }
 });
 
 app.listen(port, () => {
   console.log(`Server is up on port ${port}!`);
 });
-
-// require('./fanpageFb')
