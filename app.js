@@ -15,7 +15,8 @@ app.get("/", async (req, res) => {
 
   try {
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: false,
+      args: ["--no-sandbox", "--disable-setuid-sandbox", "--lang=en-EN"],
     });
     console.log("browser is on");
     const page = await browser.newPage();
@@ -30,7 +31,7 @@ app.get("/", async (req, res) => {
       let phoneNumberElement = document.querySelector(
         "._u9q > div:nth-child(4) ._4bl9 > div"
       );
-      
+
       const prefixOpenTime = ["Giờ", "Hours"];
       let openTimeElement = [
         ...document.querySelectorAll("._u9q > div"),
@@ -68,7 +69,7 @@ app.get("/", async (req, res) => {
         numOfFollowersElement &&
         numOfFollowersElement.innerText
           .replace(/[\.|\,]/, "")
-          .match(/\d*(?= [người|followers])/g);
+          .match(/\d*(?= [người|people])/g);
 
       numOfFollowers = numOfFollowers && numOfFollowers[0];
 
