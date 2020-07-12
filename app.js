@@ -16,14 +16,18 @@ app.get("/", async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: false,
-      args: ["--no-sandbox", "--disable-setuid-sandbox", "--lang=en-EN"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     console.log("browser is on");
     const page = await browser.newPage();
     await page.goto(url || "https://www.facebook.com/HelloCoffee125/");
-    await page.waitFor(2000);
+    await page.waitFor(1000);
     fanpageData = await page.evaluate(() => {
       const backgroundImageElement = document.querySelector("._4on7");
+
+      const avatarElement = document.querySelector("._6tay img");
+
+      const nameElement = document.querySelector("._33vv");
       // ._u9q : about section
       let addressElement = document.querySelector(
         "._u9q > div:nth-child(3) ._4bl9 > div"
@@ -36,7 +40,9 @@ app.get("/", async (req, res) => {
       let openTimeElement = [
         ...document.querySelectorAll("._u9q > div"),
       ].find(element =>
-        prefixOpenTime.some(prefix => element.innerText.includes(prefix))
+        prefixOpenTime.some(
+          prefix => element.innerText && element.innerText.includes(prefix)
+        )
       );
 
       let numOfLikesElement = document.querySelector(
@@ -50,7 +56,9 @@ app.get("/", async (req, res) => {
 
       // const reviewData = { rate: reviewDataElement[0],
       // numOfReviewers: reviewDataElement[1].innerText.match(/\d*(?= người)/g)[0]}
-      const imageUrl = backgroundImageElement && backgroundImageElement.src;
+      const avatarImg = avatarElement && avatarElement.src;
+      const name = nameElement && nameElement.innerText;
+      const coverImg = backgroundImageElement && backgroundImageElement.src;
       const address = addressElement && addressElement.innerText;
       const phoneNumber = phoneNumberElement && phoneNumberElement.innerText;
       const openTime = openTimeElement && openTimeElement.innerText;
@@ -74,7 +82,9 @@ app.get("/", async (req, res) => {
       numOfFollowers = numOfFollowers && numOfFollowers[0];
 
       return {
-        imageUrl,
+        avatarImg,
+        name,
+        coverImg,
         address,
         phoneNumber,
         openTime,
