@@ -15,7 +15,6 @@ app.get("/", async (req, res) => {
 
   try {
     const browser = await puppeteer.launch({
-      headless: false,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     console.log("browser is on");
